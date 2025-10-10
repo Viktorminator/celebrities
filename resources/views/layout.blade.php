@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'CelebStyle')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,9 +20,18 @@
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-center space-x-4">
-                        <a href="/" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Home</a>
-                        <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Trending</a>
-                        <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">New Releases</a>
+                        <a href="?nav=Popular" class="flex items-center gap-2 px-4 py-2 {{ request('nav', 'Popular') == 'Popular' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} rounded-full text-sm font-medium transition-colors">
+                            <i class="fas fa-star"></i>
+                            Popular
+                        </a>
+                        <a href="?nav=Trending" class="flex items-center gap-2 px-4 py-2 {{ request('nav') == 'Trending' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} rounded-full text-sm font-medium transition-colors">
+                            <i class="fas fa-fire"></i>
+                            Trending
+                        </a>
+                        <a href="?nav=New" class="flex items-center gap-2 px-4 py-2 {{ request('nav') == 'New' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} rounded-full text-sm font-medium transition-colors">
+                            <i class="fas fa-bolt"></i>
+                            New
+                        </a>
                         <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Categories</a>
                         <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
                     </div>
@@ -44,7 +54,7 @@
                 </div>
             </div>
         </div>
-        
+
         {{-- Mobile menu --}}
         <div id="mobile-menu" class="md:hidden hidden">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
@@ -128,11 +138,11 @@
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
             const menuIcon = document.getElementById('menu-icon');
-            
+
             mobileMenuButton.addEventListener('click', function() {
                 // Toggle mobile menu visibility
                 mobileMenu.classList.toggle('hidden');
-                
+
                 // Toggle icon between hamburger and X
                 if (mobileMenu.classList.contains('hidden')) {
                     menuIcon.classList.remove('fa-times');
@@ -142,7 +152,7 @@
                     menuIcon.classList.add('fa-times');
                 }
             });
-            
+
             // Close mobile menu when clicking outside
             document.addEventListener('click', function(event) {
                 if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
@@ -151,7 +161,7 @@
                     menuIcon.classList.add('fa-bars');
                 }
             });
-            
+
             // Close mobile menu when window is resized to desktop size
             window.addEventListener('resize', function() {
                 if (window.innerWidth >= 768) { // md breakpoint
@@ -163,4 +173,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
