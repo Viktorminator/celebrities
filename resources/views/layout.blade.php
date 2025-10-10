@@ -65,8 +65,9 @@
                     </div>
                 </div>
                 <a href="/" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Home</a>
+                <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Popular</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Trending</a>
-                <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">New Releases</a>
+                <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">New</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Categories</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">About</a>
             </div>
