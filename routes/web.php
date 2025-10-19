@@ -18,10 +18,18 @@ Route::resource('events', EventController::class);
 // Photo Analysis routes
 Route::post('/analyze-photo', [PhotoAnalysisController::class, 'analyzePhoto'])->name('analyze-photo');
 Route::get('/uploads/{filename}', [PhotoAnalysisController::class, 'serveUpload'])->name('serve-upload');
+
+// Analysis Results Page - with shareable URL
 Route::get('/analysis-results', function () {
     return view('analysis-results');
 })->name('analysis-results');
-Route::get('/celebrities/{id}', [CelebrityController::class, 'show'])->name('celebrity.show');
+
+// New Photo Analysis API routes
+Route::prefix('api/photo-analysis')->group(function () {
+    Route::get('/{id}', [PhotoAnalysisController::class, 'getAnalysis'])->name('api.photo-analysis.show');
+    Route::get('/', [PhotoAnalysisController::class, 'getAnalysisHistory'])->name('api.photo-analysis.index');
+    Route::delete('/{id}', [PhotoAnalysisController::class, 'deleteAnalysis'])->name('api.photo-analysis.delete');
+});
 // API routes
 Route::apiResource('api/celebrities', CelebrityController::class);
 Route::apiResource('api/product-categories', ProductCategoryController::class);

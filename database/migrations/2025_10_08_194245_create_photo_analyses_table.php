@@ -14,6 +14,12 @@ return new class extends Migration
         Schema::create('photo_analyses', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('image_path');
+            $table->string('image_url');
+            $table->integer('file_size')->nullable();
+            $table->string('dimensions')->nullable();
+            $table->json('analysis_metadata')->nullable();
+            $table->string('status')->default('processing');
         });
     }
 

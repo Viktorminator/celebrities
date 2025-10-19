@@ -273,6 +273,7 @@
             }
 
             // Form submission
+            // Form submission
             uploadForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 analyzeBtn.disabled = true;
@@ -290,25 +291,28 @@
 
                     if (!response.ok) {
                         if (response.status === 413) {
-                            throw new Error('File too large. Please choose an image smaller than 5MB.');
+                            throw new Error('File too large. Please choose an image smaller than 10MB.');
                         } else if (response.status === 422) {
                             const errorData = await response.json();
                             throw new Error(errorData.errors?.photo?.[0] || 'Invalid file format.');
                         } else {
-                            throw new Error('Server error (${response.status}). Please try again.');
+                            throw new Error(`Server error (${response.status}). Please try again.`);
                         }
                     }
 
                     const result = await response.json();
-                    if (result.success) {
-                        sessionStorage.setItem('analysisResults', JSON.stringify(result));
-                        window.location.href = '/analysis-results';
+
+                    if (result.success && result.redirect_url) {
+                        // Redirect to the results page with analysis ID
+                        window.location.href = result.redirect_url;
+                    } else if (result.success && result.analysis_id) {
+                        // Fallback: construct redirect URL manually
+                        window.location.href = `/analysis-results?id=${result.analysis_id}`;
                     } else {
                         throw new Error(result.message || 'Analysis failed');
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
-                } finally {
                     analyzeBtn.disabled = false;
                     analyzeBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Analyze Photo';
                 }

@@ -34,5 +34,36 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    /*
+    |--------------------------------------------------------------------------
+    | Google Cloud Vision Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure Google Cloud Vision API credentials
+    | Set GOOGLE_APPLICATION_CREDENTIALS in .env to the path of your
+    | service account JSON file
+    |
+    */
+    'google' => [
+        'vision' => [
+            'credentials_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+        ],
+    ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Amazon Product Advertising API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure Amazon PA-API credentials for affiliate product searches
+    |
+    */
+    'amazon' => [
+        'access_key' => env('AMAZON_ACCESS_KEY'),
+        'secret_key' => env('AMAZON_SECRET_KEY'),
+        'associate_tag' => env('AMAZON_ASSOCIATE_TAG'),
+        'region' => env('AMAZON_REGION', 'us-east-1'),
+        'marketplace' => env('AMAZON_MARKETPLACE', 'www.amazon.com'),
+    ],
 ];
