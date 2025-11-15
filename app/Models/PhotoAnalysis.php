@@ -10,6 +10,7 @@ class PhotoAnalysis extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'image_path',
         'image_url',
         'file_size',
@@ -30,6 +31,14 @@ class PhotoAnalysis extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get the user that owns this analysis
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get the detected items for this analysis

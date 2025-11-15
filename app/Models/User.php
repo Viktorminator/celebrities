@@ -45,4 +45,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the photo analyses for the user
+     */
+    public function photoAnalyses()
+    {
+        return $this->hasMany(PhotoAnalysis::class);
+    }
+
+    /**
+     * Get the product links for the user
+     */
+    public function productLinks()
+    {
+        return $this->hasMany(ProductLink::class);
+    }
 }

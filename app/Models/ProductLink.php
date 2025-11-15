@@ -10,6 +10,7 @@ class ProductLink extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'detected_item_id',
         'platform',
         'title',
@@ -26,6 +27,14 @@ class ProductLink extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get the user that owns this product link
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get the detected item that owns this product link

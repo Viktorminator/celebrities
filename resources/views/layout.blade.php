@@ -37,13 +37,25 @@
                     </div>
                 </div>
                 <div class="hidden md:block">
-                    <div class="ml-4 flex items-center md:ml-6">
-                        <div class="relative">
-                            <input type="text" placeholder="Search celebrities..." class="w-64 bg-gray-100 py-2 pl-10 pr-4 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
+                    <div class="ml-4 flex items-center md:ml-6 space-x-4">
+                        @auth
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
+                                <form action="{{ route('logout') }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-sm text-gray-700 hover:text-indigo-600">
+                                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                                    </button>
+                                </form>
                             </div>
-                        </div>
+                        @else
+                            <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-indigo-600 px-3 py-2">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Login
+                            </a>
+                            <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700">
+                                Sign Up
+                            </a>
+                        @endauth
                     </div>
                 </div>
                 <div class="-mr-2 flex md:hidden">
@@ -58,12 +70,24 @@
         {{-- Mobile menu --}}
         <div id="mobile-menu" class="md:hidden hidden">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
-                <div class="px-3 py-2 relative">
-                    <input type="text" placeholder="Search celebrities..." class="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
+                @auth
+                    <div class="px-3 py-2">
+                        <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
                     </div>
-                </div>
+                    <form action="{{ route('logout') }}" method="POST" class="px-3 py-2">
+                        @csrf
+                        <button type="submit" class="text-primary hover:text-indigo-600 block w-full text-left text-base font-medium">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{{ route('register') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </a>
+                @endauth
                 <a href="/" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Home</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Popular</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Trending</a>

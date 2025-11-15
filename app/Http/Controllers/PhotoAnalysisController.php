@@ -52,6 +52,7 @@ class PhotoAnalysisController extends Controller
 
             // Create photo analysis record
             $photoAnalysis = PhotoAnalysis::create([
+                'user_id' => auth()->check() ? auth()->id() : null,
                 'image_path' => $path,
                 'image_url' => $imageUrl,
                 'file_size' => $photo->getSize(),
@@ -97,6 +98,7 @@ class PhotoAnalysisController extends Controller
                 // Save product links to database
                 foreach ($productLinks as $product) {
                     ProductLink::create([
+                        'user_id' => auth()->check() ? auth()->id() : null,
                         'detected_item_id' => $detectedItem->id,
                         'platform' => $product['platform'],
                         'title' => $product['title'],
@@ -215,8 +217,17 @@ class PhotoAnalysisController extends Controller
         try {
             $perPage = $request->get('per_page', 20);
 
-            $analyses = PhotoAnalysis::with(['detectedItems'])
-                ->orderBy('created_at', 'desc')
+            $query = PhotoAnalysis::with(['detectedItems']);
+            
+            // If user is authenticated, show only their analyses
+            if (auth()->check()) {
+                $query->where('user_id', auth()->id());
+            } else {
+                // For non-authenticated users, show only public analyses (no user_id)
+                $query->whereNull('user_id');
+            }
+
+            $analyses = $query->orderBy('created_at', 'desc')
                 ->paginate($perPage);
 
             return response()->json([
@@ -239,6 +250,14 @@ class PhotoAnalysisController extends Controller
     {
         try {
             $analysis = PhotoAnalysis::findOrFail($id);
+            
+            // Check if user owns this analysis
+            if (auth()->check() && $analysis->user_id !== auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
 
             // Delete the image file
             $imagePath = storage_path('app/private/' . $analysis->image_path);

@@ -121,6 +121,65 @@
         </div>
     </div>
 
+    <!-- Product Link Modal -->
+    @auth
+    <div id="product-link-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 id="product-link-modal-title" class="text-lg font-medium text-gray-900 mb-4">Add Product Link</h3>
+                <form id="product-link-form" onsubmit="saveProductLink(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Title *</label>
+                            <input type="text" id="product-link-title" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">URL *</label>
+                            <input type="url" id="product-link-url" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Platform *</label>
+                            <select id="product-link-platform" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="Amazon">Amazon</option>
+                                <option value="Google Shopping">Google Shopping</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Price</label>
+                            <input type="text" id="product-link-price"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Image URL</label>
+                            <input type="url" id="product-link-image-url"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ASIN (Amazon)</label>
+                            <input type="text" id="product-link-asin"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" onclick="closeProductLinkModal()"
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endauth
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Get analysis ID from URL parameter
@@ -151,6 +210,7 @@
         }
 
         function displayResults(analysis) {
+            window.currentAnalysis = analysis;
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('results').classList.remove('hidden');
 
@@ -201,44 +261,68 @@
             document.getElementById('detected-items').innerHTML = itemsHtml || '<p class="text-gray-500">No items detected</p>';
 
             // Display shopping links
+            const isAuthenticated = @json(auth()->check());
             const shoppingHtml = analysis.detected_items.map((item, index) => {
-                if (!item.product_links || item.product_links.length === 0) {
-                    return '';
-                }
-
+                const hasLinks = item.product_links && item.product_links.length > 0;
+                
                 return `
                     <div class="border-t border-gray-200 pt-6 first:border-t-0 first:pt-0">
-                        <h3 class="font-semibold text-lg text-indigo-900 mb-4">
-                            <i class="fas fa-tag mr-2"></i>${item.description}
-                        </h3>
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            ${item.product_links.map(product => `
-                                <a href="${product.url}" target="_blank" rel="nofollow noopener"
-                                   class="block border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 transition-all group">
-                                    <div class="flex items-start space-x-3">
-                                        <i class="fab fa-amazon text-orange-500 text-2xl mt-1 flex-shrink-0"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <h4 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-1">
-                                                ${product.title}
-                                            </h4>
-                                            <p class="text-xs text-gray-500">${product.platform}</p>
-                                            ${product.price && product.price !== 'N/A' ?
-                    `<p class="text-lg font-bold text-green-600 mt-2">${product.price}</p>` :
-                    `<p class="text-sm text-gray-500 mt-2">View pricing</p>`
-                }
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 flex items-center text-indigo-600 text-sm font-medium">
-                                        View on ${product.platform}
-                                        <i class="fas fa-external-link-alt ml-2 text-xs"></i>
-                                    </div>
-                                </a>
-                            `).join('')}
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-indigo-900">
+                                <i class="fas fa-tag mr-2"></i>${item.description}
+                            </h3>
+                            ${isAuthenticated ? `
+                                <button onclick="showAddProductLinkModal(${item.id})" 
+                                        class="text-sm bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
+                                    <i class="fas fa-plus mr-1"></i>Add Link
+                                </button>
+                            ` : ''}
                         </div>
+                        ${hasLinks ? `
+                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${item.product_links.map(product => `
+                                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 transition-all group relative">
+                                        ${isAuthenticated ? `
+                                            <div class="absolute top-2 right-2 flex space-x-1">
+                                                <button onclick="showEditProductLinkModal(${product.id}, ${item.id})" 
+                                                        class="p-1 text-indigo-600 hover:bg-indigo-50 rounded">
+                                                    <i class="fas fa-edit text-xs"></i>
+                                                </button>
+                                                <button onclick="deleteProductLink(${product.id})" 
+                                                        class="p-1 text-red-600 hover:bg-red-50 rounded">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                            </div>
+                                        ` : ''}
+                                        <a href="${product.url}" target="_blank" rel="nofollow noopener" class="block">
+                                            <div class="flex items-start space-x-3">
+                                                <i class="fab fa-amazon text-orange-500 text-2xl mt-1 flex-shrink-0"></i>
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-1">
+                                                        ${product.title}
+                                                    </h4>
+                                                    <p class="text-xs text-gray-500">${product.platform}</p>
+                                                    ${product.price && product.price !== 'N/A' ?
+                        `<p class="text-lg font-bold text-green-600 mt-2">${product.price}</p>` :
+                        `<p class="text-sm text-gray-500 mt-2">View pricing</p>`
+                    }
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 flex items-center text-indigo-600 text-sm font-medium">
+                                                View on ${product.platform}
+                                                <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                                            </div>
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p class="text-gray-500 text-center py-4">No shopping links available</p>
+                        `}
                     </div>
                 `;
-            }).filter(html => html).join('');
-            document.getElementById('shopping-links').innerHTML = shoppingHtml || '<p class="text-gray-500 text-center py-8">No shopping links available</p>';
+            }).join('');
+            document.getElementById('shopping-links').innerHTML = shoppingHtml || '<p class="text-gray-500 text-center py-8">No items detected</p>';
         }
 
         function showError(message) {
@@ -318,7 +402,122 @@
             const text = encodeURIComponent('Check out this celebrity fashion analysis!');
             window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
         }
-    </script>
+
+        // Product Link Management Functions
+        let currentDetectedItemId = null;
+        let currentProductLinkId = null;
+
+        function showAddProductLinkModal(detectedItemId) {
+            currentDetectedItemId = detectedItemId;
+            currentProductLinkId = null;
+            document.getElementById('product-link-form').reset();
+            document.getElementById('product-link-modal-title').textContent = 'Add Product Link';
+            document.getElementById('product-link-modal').classList.remove('hidden');
+        }
+
+        function showEditProductLinkModal(productLinkId, detectedItemId) {
+            currentProductLinkId = productLinkId;
+            currentDetectedItemId = detectedItemId;
+            
+            // Find the product link data
+            const analysis = window.currentAnalysis;
+            let productLink = null;
+            analysis.detected_items.forEach(item => {
+                if (item.product_links) {
+                    const found = item.product_links.find(p => p.id === productLinkId);
+                    if (found) productLink = found;
+                }
+            });
+
+            if (productLink) {
+                document.getElementById('product-link-title').value = productLink.title || '';
+                document.getElementById('product-link-url').value = productLink.url || '';
+                document.getElementById('product-link-platform').value = productLink.platform || 'Amazon';
+                document.getElementById('product-link-price').value = productLink.price || '';
+                document.getElementById('product-link-image-url').value = productLink.image_url || '';
+                document.getElementById('product-link-asin').value = productLink.asin || '';
+            }
+
+            document.getElementById('product-link-modal-title').textContent = 'Edit Product Link';
+            document.getElementById('product-link-modal').classList.remove('hidden');
+        }
+
+        function closeProductLinkModal() {
+            document.getElementById('product-link-modal').classList.add('hidden');
+            currentDetectedItemId = null;
+            currentProductLinkId = null;
+        }
+
+        async function saveProductLink(event) {
+            event.preventDefault();
+            
+            const formData = {
+                detected_item_id: currentDetectedItemId,
+                title: document.getElementById('product-link-title').value,
+                url: document.getElementById('product-link-url').value,
+                platform: document.getElementById('product-link-platform').value,
+                price: document.getElementById('product-link-price').value,
+                image_url: document.getElementById('product-link-image-url').value,
+                asin: document.getElementById('product-link-asin').value,
+            };
+
+            try {
+                const url = currentProductLinkId 
+                    ? `/api/product-links/${currentProductLinkId}`
+                    : '/api/product-links';
+                const method = currentProductLinkId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeProductLinkModal();
+                    // Reload the analysis to show updated links
+                    const analysisId = new URLSearchParams(window.location.search).get('id');
+                    loadAnalysis(analysisId);
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save product link'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteProductLink(productLinkId) {
+            if (!confirm('Are you sure you want to delete this product link?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/product-links/${productLinkId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload the analysis to show updated links
+                    const analysisId = new URLSearchParams(window.location.search).get('id');
+                    loadAnalysis(analysisId);
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to delete product link'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
 
     <style>
         @media print {
