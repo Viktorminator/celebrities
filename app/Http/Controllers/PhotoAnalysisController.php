@@ -27,12 +27,17 @@ class PhotoAnalysisController extends Controller
     public function analyzePhoto(Request $request)
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240'
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'links' => 'nullable|array',
+            'links.*' => 'nullable|url',
+            'tags' => 'nullable|string',
+            'description' => 'nullable|string|max:1000',
         ], [
             'photo.required' => 'Please select an image to analyze.',
             'photo.image' => 'The file must be an image.',
             'photo.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif.',
-            'photo.max' => 'The image may not be greater than 10MB.'
+            'photo.max' => 'The image may not be greater than 10MB.',
+            'links.*.url' => 'Please provide valid URLs for product links.',
         ]);
 
         DB::beginTransaction();
@@ -50,6 +55,13 @@ class PhotoAnalysisController extends Controller
             $dimensions = getimagesize($photo->getPathname());
             $dimensionsStr = $dimensions ? "{$dimensions[0]}x{$dimensions[1]}" : null;
 
+            // Process form data
+            $links = array_filter($request->input('links', []));
+            $tags = $request->input('tags') ? explode(',', $request->input('tags')) : [];
+            $tags = array_map('trim', $tags);
+            $tags = array_filter($tags);
+            $description = $request->input('description');
+
             // Create photo analysis record
             $photoAnalysis = PhotoAnalysis::create([
                 'user_id' => auth()->check() ? auth()->id() : null,
@@ -61,6 +73,9 @@ class PhotoAnalysisController extends Controller
                 'analysis_metadata' => [
                     'upload_time' => now()->toDateTimeString(),
                     'original_filename' => $photo->getClientOriginalName(),
+                    'user_links' => $links,
+                    'user_tags' => $tags,
+                    'description' => $description,
                 ]
             ]);
 
@@ -77,6 +92,7 @@ class PhotoAnalysisController extends Controller
             $similarProducts = [];
 
             // Process each detected item
+            $firstDetectedItem = null;
             foreach ($detectionResult['items'] as $item) {
                 // Save detected item to database
                 $detectedItem = DetectedItem::create([
@@ -88,6 +104,11 @@ class PhotoAnalysisController extends Controller
                     'bounding_box' => $item['bounding_box'],
                     'raw_data' => $item['raw_data']
                 ]);
+
+                // Store first detected item for user-provided links
+                if (!$firstDetectedItem) {
+                    $firstDetectedItem = $detectedItem;
+                }
 
                 // Search for products on Amazon
                 $productLinks = $this->amazonService->searchProducts(
@@ -125,6 +146,38 @@ class PhotoAnalysisController extends Controller
                         'url' => $product['url'],
                         'similarity_score' => $item['confidence'] / 100
                     ];
+                }
+            }
+
+            // Add user-provided links to the first detected item (or create a general item if none detected)
+            if (!empty($links)) {
+                $targetItem = $firstDetectedItem;
+                
+                // If no items detected, create a general item for user links
+                if (!$targetItem) {
+                    $targetItem = DetectedItem::create([
+                        'photo_analysis_id' => $photoAnalysis->id,
+                        'category' => 'general',
+                        'description' => 'User provided links',
+                        'confidence' => 100,
+                    ]);
+                }
+
+                // Add user-provided links
+                foreach ($links as $link) {
+                    if (!empty($link)) {
+                        ProductLink::create([
+                            'user_id' => auth()->check() ? auth()->id() : null,
+                            'detected_item_id' => $targetItem->id,
+                            'platform' => 'Custom',
+                            'title' => 'User Provided Link',
+                            'url' => $link,
+                            'price' => null,
+                            'image_url' => null,
+                            'asin' => null,
+                            'search_query' => 'user_provided',
+                        ]);
+                    }
                 }
             }
 

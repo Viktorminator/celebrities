@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'CelebStyle')</title>
+    <title>@yield('title', 'Glamdar - Glamour Radar')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -15,7 +15,7 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex-shrink-0 flex items-center">
                     <a href="/" class="text-2xl font-display font-bold text-primary cursor-pointer">
-                        <span class="text-pink-500">Celeb</span>Style
+                        <span class="text-pink-500">Glam</span><span class="text-indigo-600">dar</span>
                     </a>
                 </div>
                 <div class="hidden md:block">
@@ -32,13 +32,17 @@
                             <i class="fas fa-bolt"></i>
                             New
                         </a>
-                        <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Categories</a>
-                        <a href="#" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
+                        <a href="{{ route('categories') }}" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Categories</a>
+                        <a href="{{ route('about') }}" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
                     </div>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-4 flex items-center md:ml-6 space-x-4">
                         @auth
+                            <button id="add-style-btn-header" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Add Your Style
+                            </button>
                             <div class="flex items-center space-x-3">
                                 <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
                                 <form action="{{ route('logout') }}" method="POST" class="inline">
@@ -71,6 +75,10 @@
         <div id="mobile-menu" class="md:hidden hidden">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
                 @auth
+                    <button id="add-style-btn-mobile" class="w-full bg-pink-500 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 mb-3 mx-3">
+                        <i class="fas fa-plus"></i>
+                        Add Your Style
+                    </button>
                     <div class="px-3 py-2">
                         <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
                     </div>
@@ -92,8 +100,8 @@
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Popular</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Trending</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">New</a>
-                <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Categories</a>
-                <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">About</a>
+                <a href="{{ route('categories') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Categories</a>
+                <a href="{{ route('about') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">About</a>
             </div>
         </div>
     </header>
@@ -102,15 +110,19 @@
         @yield('content')
     </main>
 
+    @auth
+        @include('partials.upload-modal')
+    @endauth
+
     {{-- Footer --}}
     <footer class="bg-primary text-white mt-12 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <h3 class="text-xl font-display font-bold mb-4">
-                        <span class="text-pink-500">Celeb</span>Style
+                        <span class="text-pink-500">Glam</span><span class="text-indigo-400">dar</span>
                     </h3>
-                    <p class="text-gray-400">Discover celebrity style and shop their fashion, accessories, and lifestyle products.</p>
+                    <p class="text-gray-400">Your glamour radar for discovering fashion. Upload photos to find similar styles and shop the looks you love.</p>
                     <div class="flex space-x-4 mt-4">
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram text-xl"></i></a>
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter text-xl"></i></a>
@@ -121,11 +133,11 @@
                 <div>
                     <h4 class="font-semibold text-lg mb-4">Categories</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Actors & Actresses</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Musicians</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Athletes</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Influencers</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Fashion Icons</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Fashion Bloggers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Style Inspirations</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Trending Looks</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">User Collections</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Fashion Finds</a></li>
                     </ul>
                 </div>
                 <div>
@@ -140,7 +152,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg mb-4">Stay Updated</h4>
-                    <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest celebrity style trends.</p>
+                    <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest fashion trends and style discoveries.</p>
                     <div class="flex">
                         <input type="email" placeholder="Your email" class="px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-pink-500 w-full" />
                         <button class="bg-pink-500 text-white px-4 py-2 rounded-r-lg font-medium hover:bg-pink-600">Subscribe</button>
@@ -148,7 +160,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 text-sm">&copy; {{ date('Y') }} CelebStyle. All rights reserved.</p>
+                <p class="text-gray-500 text-sm">&copy; {{ date('Y') }} Glamdar. All rights reserved.</p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
                     <a href="#" class="text-gray-500 hover:text-white text-sm">Privacy Policy</a>
                     <a href="#" class="text-gray-500 hover:text-white text-sm">Terms of Service</a>
@@ -163,6 +175,32 @@
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
             const menuIcon = document.getElementById('menu-icon');
+            const modal = document.getElementById('upload-modal');
+
+            // Handle "Add Your Style" buttons
+            const addStyleBtnHeader = document.getElementById('add-style-btn-header');
+            const addStyleBtnMobile = document.getElementById('add-style-btn-mobile');
+
+            function openUploadModal() {
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('opacity-100');
+                    // Close mobile menu if open
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        menuIcon.classList.remove('fa-times');
+                        menuIcon.classList.add('fa-bars');
+                    }
+                }
+            }
+
+            if (addStyleBtnHeader) {
+                addStyleBtnHeader.addEventListener('click', openUploadModal);
+            }
+
+            if (addStyleBtnMobile) {
+                addStyleBtnMobile.addEventListener('click', openUploadModal);
+            }
 
             mobileMenuButton.addEventListener('click', function() {
                 // Toggle mobile menu visibility

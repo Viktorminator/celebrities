@@ -10,6 +10,8 @@ use App\Http\Controllers\PhotoAnalysisController;
 use App\Http\Controllers\ProductLinkController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\CategoriesController;
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -20,6 +22,8 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 // Web routes
 Route::get('/', [CelebrityController::class, 'home'])->name('home');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::get('/categories', [CategoriesController::class, 'index'])->name('categories');
 Route::resource('celebrities', CelebrityController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);

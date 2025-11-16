@@ -1,6 +1,6 @@
 @extends('layout')
 
-@section('title', 'Analysis Results | CelebStyle')
+@section('title', 'Analysis Results | Glamdar')
 
 @section('content')
     <div class="min-h-screen bg-gray-50">
@@ -264,7 +264,7 @@
             const isAuthenticated = @json(auth()->check());
             const shoppingHtml = analysis.detected_items.map((item, index) => {
                 const hasLinks = item.product_links && item.product_links.length > 0;
-                
+
                 return `
                     <div class="border-t border-gray-200 pt-6 first:border-t-0 first:pt-0">
                         <div class="flex items-center justify-between mb-4">
@@ -272,7 +272,7 @@
                                 <i class="fas fa-tag mr-2"></i>${item.description}
                             </h3>
                             ${isAuthenticated ? `
-                                <button onclick="showAddProductLinkModal(${item.id})" 
+                                <button onclick="showAddProductLinkModal(${item.id})"
                                         class="text-sm bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700">
                                     <i class="fas fa-plus mr-1"></i>Add Link
                                 </button>
@@ -284,11 +284,11 @@
                                     <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 transition-all group relative">
                                         ${isAuthenticated ? `
                                             <div class="absolute top-2 right-2 flex space-x-1">
-                                                <button onclick="showEditProductLinkModal(${product.id}, ${item.id})" 
+                                                <button onclick="showEditProductLinkModal(${product.id}, ${item.id})"
                                                         class="p-1 text-indigo-600 hover:bg-indigo-50 rounded">
                                                     <i class="fas fa-edit text-xs"></i>
                                                 </button>
-                                                <button onclick="deleteProductLink(${product.id})" 
+                                                <button onclick="deleteProductLink(${product.id})"
                                                         class="p-1 text-red-600 hover:bg-red-50 rounded">
                                                     <i class="fas fa-trash text-xs"></i>
                                                 </button>
@@ -388,7 +388,7 @@
 
         function shareOnTwitter() {
             const url = encodeURIComponent(window.location.href);
-            const text = encodeURIComponent('Check out this celebrity fashion analysis! 👗✨');
+            const text = encodeURIComponent('Check out my fashion analysis on Glamdar! 👗✨');
             window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
         }
 
@@ -399,7 +399,7 @@
 
         function shareOnWhatsApp() {
             const url = encodeURIComponent(window.location.href);
-            const text = encodeURIComponent('Check out this celebrity fashion analysis!');
+            const text = encodeURIComponent('Check out my fashion analysis on Glamdar!');
             window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
         }
 
@@ -418,7 +418,7 @@
         function showEditProductLinkModal(productLinkId, detectedItemId) {
             currentProductLinkId = productLinkId;
             currentDetectedItemId = detectedItemId;
-            
+
             // Find the product link data
             const analysis = window.currentAnalysis;
             let productLink = null;
@@ -450,7 +450,7 @@
 
         async function saveProductLink(event) {
             event.preventDefault();
-            
+
             const formData = {
                 detected_item_id: currentDetectedItemId,
                 title: document.getElementById('product-link-title').value,
@@ -462,7 +462,7 @@
             };
 
             try {
-                const url = currentProductLinkId 
+                const url = currentProductLinkId
                     ? `/api/product-links/${currentProductLinkId}`
                     : '/api/product-links';
                 const method = currentProductLinkId ? 'PUT' : 'POST';
@@ -517,7 +517,7 @@
                 alert('Error: ' + error.message);
             }
         }
-
+    </script>
 
     <style>
         @media print {
