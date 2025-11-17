@@ -11,7 +11,24 @@ class CelebrityController extends Controller
     public function home()
     {
         $celebrities = Celebrity::all();
-        return view('home', compact('celebrities'));
+        
+        // Get recent styles (photo analyses) for the style cards
+        $styles = \App\Models\PhotoAnalysis::where('status', 'completed')
+            ->whereNotNull('user_id') // Only show user-uploaded styles
+            ->with(['user', 'productLinks'])
+            ->withCount(['likes', 'styleFavourites'])
+            ->orderBy('created_at', 'desc')
+            ->limit(12)
+            ->get();
+
+        // Check which styles are favourited by current user/session
+        $userId = auth()->id();
+        $sessionId = session()->getId();
+        foreach ($styles as $style) {
+            $style->is_favourited = $style->isFavouritedBy($userId, $sessionId);
+        }
+
+        return view('home', compact('celebrities', 'styles'));
     }
 
     // List all celebrities (API)

@@ -262,6 +262,7 @@
 
             // Display shopping links
             const isAuthenticated = @json(auth()->check());
+            const userHasSubscription = @json(auth()->check() && auth()->user()->hasActiveSubscription() ?? false);
             const shoppingHtml = analysis.detected_items.map((item, index) => {
                 const hasLinks = item.product_links && item.product_links.length > 0;
 
@@ -283,7 +284,12 @@
                                 ${item.product_links.map(product => `
                                     <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-indigo-300 transition-all group relative">
                                         ${isAuthenticated ? `
-                                            <div class="absolute top-2 right-2 flex space-x-1">
+                                            <div class="absolute top-2 right-2 flex space-x-1 z-10">
+                                                <button onclick="toggleFavourite(${product.id}); return false;"
+                                                        class="p-1 ${product.is_favourited ? 'text-red-600' : 'text-gray-400'} hover:bg-red-50 rounded favourite-btn-${product.id}"
+                                                        title="Favourite">
+                                                    <i class="fas fa-heart text-xs"></i>
+                                                </button>
                                                 <button onclick="showEditProductLinkModal(${product.id}, ${item.id})"
                                                         class="p-1 text-indigo-600 hover:bg-indigo-50 rounded">
                                                     <i class="fas fa-edit text-xs"></i>
@@ -294,7 +300,7 @@
                                                 </button>
                                             </div>
                                         ` : ''}
-                                        <a href="${product.url}" target="_blank" rel="nofollow noopener" class="block">
+                                        <a href="#" onclick="trackLinkClick(${product.id}, '${product.url}'); return false;" target="_blank" rel="nofollow noopener" class="block">
                                             <div class="flex items-start space-x-3">
                                                 <i class="fab fa-amazon text-orange-500 text-2xl mt-1 flex-shrink-0"></i>
                                                 <div class="flex-1 min-w-0">
@@ -308,10 +314,26 @@
                     }
                                                 </div>
                                             </div>
-                                            <div class="mt-3 flex items-center text-indigo-600 text-sm font-medium">
-                                                View on ${product.platform}
-                                                <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                                            <div class="mt-3 flex items-center justify-between">
+                                                <span class="text-indigo-600 text-sm font-medium">
+                                                    View on ${product.platform}
+                                                    <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                                                </span>
+                                                ${(isAuthenticated && userHasSubscription) ? `
+                                                    <span class="text-xs text-gray-500 flex items-center gap-1" id="visits-${product.id}">
+                                                        <i class="fas fa-eye"></i>
+                                                        <span>${product.visits || 0}</span>
+                                                    </span>
+                                                ` : ''}
                                             </div>
+                                            ${isAuthenticated ? `
+                                                <div class="mt-2 flex items-center gap-2">
+                                                    <span class="text-xs text-gray-500 flex items-center gap-1" id="favourites-count-${product.id}">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span>${product.favourites_count || 0}</span>
+                                                    </span>
+                                                </div>
+                                            ` : ''}
                                         </a>
                                     </div>
                                 `).join('')}
@@ -323,6 +345,27 @@
                 `;
             }).join('');
             document.getElementById('shopping-links').innerHTML = shoppingHtml || '<p class="text-gray-500 text-center py-8">No items detected</p>';
+            
+            // Add like button for the style (if not owned by current user)
+            const styleOwnerId = analysis.user_id;
+            const currentUserId = @json(auth()->id());
+            if (isAuthenticated && styleOwnerId && styleOwnerId !== currentUserId) {
+                const likeButtonHtml = `
+                    <div class="mt-6 flex items-center justify-center">
+                        <button onclick="toggleLike(${analysis.id})" 
+                                class="flex items-center gap-2 px-6 py-3 rounded-full ${analysis.is_liked ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} transition-colors"
+                                id="like-btn-${analysis.id}">
+                            <i class="fas fa-heart ${analysis.is_liked ? 'text-white' : 'text-red-500'}"></i>
+                            <span>${analysis.is_liked ? 'Liked' : 'Like'}</span>
+                            <span class="ml-2" id="likes-count-${analysis.id}">${analysis.likes_count || 0}</span>
+                        </button>
+                    </div>
+                `;
+                const shoppingLinksDiv = document.getElementById('shopping-links');
+                if (shoppingLinksDiv) {
+                    shoppingLinksDiv.insertAdjacentHTML('afterend', likeButtonHtml);
+                }
+            }
         }
 
         function showError(message) {
@@ -515,6 +558,125 @@
                 }
             } catch (error) {
                 alert('Error: ' + error.message);
+            }
+        }
+
+        async function trackLinkClick(productLinkId, url) {
+            try {
+                const response = await fetch(`/api/product-links/${productLinkId}/track`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update the visits count in the UI (only if visible for subscribed users)
+                    const visitsElement = document.getElementById(`visits-${productLinkId}`);
+                    if (visitsElement) {
+                        visitsElement.querySelector('span').textContent = data.visits;
+                    }
+                    // Open the link in a new tab
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                } else {
+                    // If tracking fails, still open the link
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            } catch (error) {
+                // If tracking fails, still open the link
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        async function toggleFavourite(productLinkId) {
+            const isAuthenticated = @json(auth()->check());
+            if (!isAuthenticated) {
+                alert('Please log in to favourite links');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/favourites/${productLinkId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update favourite button
+                    const favBtn = document.querySelector(`.favourite-btn-${productLinkId}`);
+                    if (favBtn) {
+                        if (data.is_favourited) {
+                            favBtn.classList.remove('text-gray-400');
+                            favBtn.classList.add('text-red-600');
+                        } else {
+                            favBtn.classList.remove('text-red-600');
+                            favBtn.classList.add('text-gray-400');
+                        }
+                    }
+                    // Update favourites count
+                    const favCount = document.getElementById(`favourites-count-${productLinkId}`);
+                    if (favCount) {
+                        favCount.querySelector('span').textContent = data.favourites_count;
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling favourite:', error);
+            }
+        }
+
+        async function toggleLike(photoAnalysisId) {
+            const isAuthenticated = @json(auth()->check());
+            if (!isAuthenticated) {
+                alert('Please log in to like styles');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/likes/${photoAnalysisId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update like button
+                    const likeBtn = document.getElementById(`like-btn-${photoAnalysisId}`);
+                    if (likeBtn) {
+                        if (data.is_liked) {
+                            likeBtn.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                            likeBtn.classList.add('bg-red-500', 'text-white');
+                            likeBtn.querySelector('span').textContent = 'Liked';
+                            likeBtn.querySelector('i').classList.remove('text-red-500');
+                            likeBtn.querySelector('i').classList.add('text-white');
+                        } else {
+                            likeBtn.classList.remove('bg-red-500', 'text-white');
+                            likeBtn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                            likeBtn.querySelector('span').textContent = 'Like';
+                            likeBtn.querySelector('i').classList.remove('text-white');
+                            likeBtn.querySelector('i').classList.add('text-red-500');
+                        }
+                    }
+                    // Update likes count
+                    const likesCount = document.getElementById(`likes-count-${photoAnalysisId}`);
+                    if (likesCount) {
+                        likesCount.textContent = data.likes_count;
+                    }
+                } else {
+                    alert(data.message || 'Error liking style');
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
             }
         }
     </script>

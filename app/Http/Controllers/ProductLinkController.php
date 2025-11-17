@@ -133,4 +133,22 @@ class ProductLinkController extends Controller
             'product_links' => $productLinks
         ]);
     }
+
+    /**
+     * Track a click on a product link
+     */
+    public function track($id)
+    {
+        $productLink = ProductLink::findOrFail($id);
+        
+        // Increment visits count
+        $productLink->increment('visits');
+        
+        // Return the URL to redirect to
+        return response()->json([
+            'success' => true,
+            'url' => $productLink->url,
+            'visits' => $productLink->visits
+        ]);
+    }
 }

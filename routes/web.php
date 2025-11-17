@@ -12,6 +12,11 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\StyleController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\StyleFavouriteController;
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -24,6 +29,14 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/', [CelebrityController::class, 'home'])->name('home');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/categories', [CategoriesController::class, 'index'])->name('categories');
+Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
+
+// User Styles routes (require authentication)
+Route::middleware('auth')->prefix('styles')->name('styles.')->group(function () {
+    Route::get('/', [StyleController::class, 'index'])->name('index');
+    Route::get('/{id}', [StyleController::class, 'show'])->name('show');
+    Route::delete('/{id}', [StyleController::class, 'destroy'])->name('destroy');
+});
 Route::resource('celebrities', CelebrityController::class);
 Route::resource('product-categories', ProductCategoryController::class);
 Route::resource('products', ProductController::class);
@@ -49,13 +62,31 @@ Route::prefix('api/photo-analysis')->group(function () {
     });
 });
 
-// Product Link routes (require authentication)
+// Product Link routes
+Route::get('/api/product-links/{id}/track', [ProductLinkController::class, 'track'])->name('api.product-links.track');
 Route::middleware('auth')->prefix('api/product-links')->group(function () {
     Route::post('/', [ProductLinkController::class, 'store'])->name('api.product-links.store');
     Route::put('/{id}', [ProductLinkController::class, 'update'])->name('api.product-links.update');
     Route::delete('/{id}', [ProductLinkController::class, 'destroy'])->name('api.product-links.destroy');
     Route::get('/detected-item/{detectedItemId}', [ProductLinkController::class, 'getByDetectedItem'])->name('api.product-links.by-detected-item');
 });
+
+// Favourites routes
+Route::get('/api/favourites/{productLinkId}/check', [FavouriteController::class, 'check'])->name('api.favourites.check');
+Route::middleware('auth')->prefix('api/favourites')->group(function () {
+    Route::post('/{productLinkId}/toggle', [FavouriteController::class, 'toggle'])->name('api.favourites.toggle');
+});
+
+// Likes routes
+Route::get('/api/likes/{photoAnalysisId}/check', [LikeController::class, 'check'])->name('api.likes.check');
+Route::middleware('auth')->prefix('api/likes')->group(function () {
+    Route::post('/{photoAnalysisId}/toggle', [LikeController::class, 'toggle'])->name('api.likes.toggle');
+});
+
+// Style Favourites routes
+Route::get('/favourites', [StyleFavouriteController::class, 'index'])->name('favourites.index');
+Route::get('/api/style-favourites/{photoAnalysisId}/check', [StyleFavouriteController::class, 'check'])->name('api.style-favourites.check');
+Route::post('/api/style-favourites/{photoAnalysisId}/toggle', [StyleFavouriteController::class, 'toggle'])->name('api.style-favourites.toggle');
 // API routes
 Route::apiResource('api/celebrities', CelebrityController::class);
 Route::apiResource('api/product-categories', ProductCategoryController::class);

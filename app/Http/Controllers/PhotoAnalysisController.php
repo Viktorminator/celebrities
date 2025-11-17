@@ -40,6 +40,16 @@ class PhotoAnalysisController extends Controller
             'links.*.url' => 'Please provide valid URLs for product links.',
         ]);
 
+        $user = $request->user();
+
+        if ($user && $user->hasReachedStyleLimit()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have reached the maximum number of styles allowed for your current plan. Upgrade your subscription to add more styles.',
+                'upgrade_url' => route('subscriptions'),
+            ], 403);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -196,7 +206,7 @@ class PhotoAnalysisController extends Controller
             return response()->json([
                 'success' => true,
                 'analysis_id' => $photoAnalysis->id,
-                'redirect_url' => route('analysis-results') . '?id=' . $photoAnalysis->id,
+                'redirect_url' => auth()->check() ? route('styles.index') : route('analysis-results') . '?id=' . $photoAnalysis->id,
                 'image_url' => $imageUrl,
                 'detected_items' => $detectedItems,
                 'confidence_scores' => $confidenceScores,
@@ -246,12 +256,41 @@ class PhotoAnalysisController extends Controller
     public function getAnalysis($id)
     {
         try {
-            $analysis = PhotoAnalysis::with(['detectedItems.productLinks'])
+            $analysis = PhotoAnalysis::with(['detectedItems.productLinks.favourites'])
                 ->findOrFail($id);
+
+            // Add visits, favourites, and likes data
+            $userId = auth()->id();
+            $hasActiveSubscription = $userId ? auth()->user()->hasActiveSubscription() : false;
+            
+            // Load likes count
+            $analysis->loadCount('likes');
+            if ($userId) {
+                $analysis->is_liked = $analysis->isLikedBy($userId);
+            } else {
+                $analysis->is_liked = false;
+            }
+
+            // Add visits and favourites info to product links
+            foreach ($analysis->detectedItems as $item) {
+                foreach ($item->productLinks as $link) {
+                    $link->loadCount('favourites');
+                    if ($userId) {
+                        $link->is_favourited = $link->isFavouritedBy($userId);
+                    } else {
+                        $link->is_favourited = false;
+                    }
+                    // Only show visits to registered/subscribed users
+                    if (!$userId || !$hasActiveSubscription) {
+                        $link->visits = null; // Hide visits from non-subscribed users
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,
-                'analysis' => $analysis
+                'analysis' => $analysis,
+                'user_has_subscription' => $hasActiveSubscription
             ]);
 
         } catch (\Exception $e) {

@@ -130,4 +130,61 @@ class PhotoAnalysis extends Model
     {
         return $query->where('created_at', '>=', now()->subDays($days));
     }
+
+    /**
+     * Get the likes for this style
+     */
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    /**
+     * Check if a user has liked this style
+     */
+    public function isLikedBy($userId)
+    {
+        if (!$userId) {
+            return false;
+        }
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Get the count of likes
+     */
+    public function getLikesCountAttribute()
+    {
+        return $this->likes()->count();
+    }
+
+    /**
+     * Get the style favourites for this style
+     */
+    public function styleFavourites()
+    {
+        return $this->hasMany(StyleFavourite::class, 'photo_analysis_id');
+    }
+
+    /**
+     * Check if a user/session has favourited this style
+     */
+    public function isFavouritedBy($userId = null, $sessionId = null)
+    {
+        if ($userId) {
+            return $this->styleFavourites()->where('user_id', $userId)->exists();
+        }
+        if ($sessionId) {
+            return $this->styleFavourites()->where('session_id', $sessionId)->exists();
+        }
+        return false;
+    }
+
+    /**
+     * Get the count of style favourites
+     */
+    public function getStyleFavouritesCountAttribute()
+    {
+        return $this->styleFavourites()->count();
+    }
 }

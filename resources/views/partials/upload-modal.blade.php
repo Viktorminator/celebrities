@@ -403,16 +403,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            if (!response.ok) {
-                if (response.status === 413) {
-                    throw new Error('File too large. Please choose an image smaller than 10MB.');
-                } else if (response.status === 422) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.errors?.photo?.[0] || 'Invalid file format.');
-                } else {
-                    throw new Error(`Server error (${response.status}). Please try again.`);
-                }
+        if (!response.ok) {
+            let errorData = null;
+            try {
+                errorData = await response.json();
+            } catch (parseError) {
+                // ignore
             }
+
+            if (response.status === 413) {
+                throw new Error('File too large. Please choose an image smaller than 10MB.');
+            } else if (response.status === 422) {
+                throw new Error(errorData?.errors?.photo?.[0] || 'Invalid file format.');
+            } else if (response.status === 403 && errorData?.upgrade_url) {
+                alert(errorData.message || 'You have reached your current plan limit.');
+                window.location.href = errorData.upgrade_url;
+                return;
+            } else {
+                throw new Error(errorData?.message || `Server error (${response.status}). Please try again.`);
+            }
+        }
 
             const result = await response.json();
 

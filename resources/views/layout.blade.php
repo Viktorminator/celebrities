@@ -7,6 +7,7 @@
     <title>@yield('title', 'Glamdar - Glamour Radar')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
     {{-- Header --}}
@@ -33,6 +34,7 @@
                             New
                         </a>
                         <a href="{{ route('categories') }}" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Categories</a>
+                        <a href="{{ route('subscriptions') }}" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">Subscriptions</a>
                         <a href="{{ route('about') }}" class="text-primary hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
                     </div>
                 </div>
@@ -43,14 +45,30 @@
                                 <i class="fas fa-plus"></i>
                                 Add Your Style
                             </button>
-                            <div class="flex items-center space-x-3">
-                                <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
-                                <form action="{{ route('logout') }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="text-sm text-gray-700 hover:text-indigo-600">
-                                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
-                                    </button>
-                                </form>
+                            <!-- User Dropdown Menu -->
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center space-x-2 text-sm text-gray-700 hover:text-indigo-600 px-3 py-2 focus:outline-none">
+                                    <span>{{ Auth::user()->name }}</span>
+                                    <i class="fas fa-chevron-down text-xs transition-transform" :class="{'rotate-180': open}"></i>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                    <a href="{{ route('styles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">
+                                        <i class="fas fa-images mr-2"></i>My Styles
+                                    </a>
+                                    <a href="{{ route('favourites.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">
+                                        <i class="fas fa-heart mr-2"></i>Favourites
+                                    </a>
+                                    <a href="{{ route('subscriptions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600">
+                                        <i class="fas fa-crown mr-2"></i>Subscription
+                                    </a>
+                                    <div class="border-t border-gray-200 my-1"></div>
+                                    <form action="{{ route('logout') }}" method="POST" class="block">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">
+                                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         @else
                             <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-indigo-600 px-3 py-2">
@@ -79,12 +97,21 @@
                         <i class="fas fa-plus"></i>
                         Add Your Style
                     </button>
-                    <div class="px-3 py-2">
-                        <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
+                    <div class="px-3 py-2 border-b border-gray-200 mb-2">
+                        <span class="text-sm font-semibold text-gray-900">{{ Auth::user()->name }}</span>
                     </div>
+                    <a href="{{ route('styles.index') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-images mr-2"></i>My Styles
+                    </a>
+                    <a href="{{ route('favourites.index') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-heart mr-2"></i>Favourites
+                    </a>
+                    <a href="{{ route('subscriptions') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">
+                        <i class="fas fa-crown mr-2"></i>Subscription
+                    </a>
                     <form action="{{ route('logout') }}" method="POST" class="px-3 py-2">
                         @csrf
-                        <button type="submit" class="text-primary hover:text-indigo-600 block w-full text-left text-base font-medium">
+                        <button type="submit" class="text-primary hover:text-red-600 block w-full text-left text-base font-medium">
                             <i class="fas fa-sign-out-alt mr-2"></i>Logout
                         </button>
                     </form>
@@ -101,6 +128,7 @@
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Trending</a>
                 <a href="#" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">New</a>
                 <a href="{{ route('categories') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Categories</a>
+                <a href="{{ route('subscriptions') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">Subscriptions</a>
                 <a href="{{ route('about') }}" class="text-primary hover:text-indigo-600 block px-3 py-2 text-base font-medium">About</a>
             </div>
         </div>

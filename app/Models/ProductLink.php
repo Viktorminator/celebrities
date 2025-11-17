@@ -19,7 +19,8 @@ class ProductLink extends Model
         'image_url',
         'asin',
         'search_query',
-        'raw_data'
+        'raw_data',
+        'visits'
     ];
 
     protected $casts = [
@@ -153,5 +154,32 @@ class ProductLink extends Model
     {
         return $query->whereNotNull('price')
             ->where('price', '!=', 'N/A');
+    }
+
+    /**
+     * Get the favourites for this product link
+     */
+    public function favourites()
+    {
+        return $this->hasMany(Favourite::class);
+    }
+
+    /**
+     * Check if a user has favourited this link
+     */
+    public function isFavouritedBy($userId)
+    {
+        if (!$userId) {
+            return false;
+        }
+        return $this->favourites()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Get the count of favourites
+     */
+    public function getFavouritesCountAttribute()
+    {
+        return $this->favourites()->count();
     }
 }
