@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('style_tags', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->string('date');
-            $table->text('description');
-            $table->string('image_url');
-            $table->string('category');
-            $table->foreignId('celebrity_id')->constrained('celebrities');
+            $table->foreignId('card_id')->constrained('cards')->onDelete('cascade');
+            $table->string('tag', 50);
             $table->timestamps();
+
+            // Ensure unique tags per style
+            $table->unique(['card_id', 'tag']);
         });
     }
 
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('style_tags');
     }
 };

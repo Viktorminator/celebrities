@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('photo_analyses', function (Blueprint $table) {
+        Schema::table('cards', function (Blueprint $table) {
             $table->json('detected_celebrities')->nullable()->after('analysis_metadata');
             $table->integer('face_count')->default(0)->after('detected_celebrities');
             $table->boolean('has_person')->default(false)->after('face_count');
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('photo_analyses', function (Blueprint $table) {
+        Schema::table('cards', function (Blueprint $table) {
             $table->dropColumn([
                 'detected_celebrities',
                 'face_count',

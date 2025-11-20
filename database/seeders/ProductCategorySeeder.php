@@ -3,14 +3,14 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ProductCategory;
+use App\Models\Category;
 
 class ProductCategorySeeder extends Seeder
 {
     public function run()
     {
-        ProductCategory::create(['name' => 'Clothes', 'slug' => 'clothes']);
-        ProductCategory::create(['name' => 'Perfume', 'slug' => 'perfume']);
-        ProductCategory::create(['name' => 'Shoes', 'slug' => 'shoes']);
+        Category::create(['name' => 'Clothes', 'slug' => 'clothes']);
+        Category::create(['name' => 'Perfume', 'slug' => 'perfume']);
+        Category::create(['name' => 'Shoes', 'slug' => 'shoes']);
     }
 }

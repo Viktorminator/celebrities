@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('detected_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('photo_analysis_id')->constrained('photo_analyses')->onDelete('cascade');
+            $table->foreignId('card_id')->constrained('cards')->onDelete('cascade');
             $table->string('category'); // shirt, pants, dress, etc.
             $table->text('description'); // Full description for search
             $table->string('color')->nullable();

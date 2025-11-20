@@ -41,10 +41,10 @@
                 <div class="hidden md:block">
                     <div class="ml-4 flex items-center md:ml-6 space-x-4">
                         @auth
-                            <button id="add-style-btn-header" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors flex items-center gap-2">
+                            <a href="{{ route('styles.create') }}" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors flex items-center gap-2">
                                 <i class="fas fa-plus"></i>
                                 Add Your Style
-                            </button>
+                            </a>
                             <!-- User Dropdown Menu -->
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open" class="flex items-center space-x-2 text-sm text-gray-700 hover:text-indigo-600 px-3 py-2 focus:outline-none">
@@ -93,10 +93,10 @@
         <div id="mobile-menu" class="md:hidden hidden">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
                 @auth
-                    <button id="add-style-btn-mobile" class="w-full bg-pink-500 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 mb-3 mx-3">
+                    <a href="{{ route('styles.create') }}" class="w-full bg-pink-500 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 mb-3 mx-3">
                         <i class="fas fa-plus"></i>
                         Add Your Style
-                    </button>
+                    </a>
                     <div class="px-3 py-2 border-b border-gray-200 mb-2">
                         <span class="text-sm font-semibold text-gray-900">{{ Auth::user()->name }}</span>
                     </div>
@@ -138,9 +138,6 @@
         @yield('content')
     </main>
 
-    @auth
-        @include('partials.upload-modal')
-    @endauth
 
     {{-- Footer --}}
     <footer class="bg-primary text-white mt-12 py-10">
@@ -203,32 +200,6 @@
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
             const menuIcon = document.getElementById('menu-icon');
-            const modal = document.getElementById('upload-modal');
-
-            // Handle "Add Your Style" buttons
-            const addStyleBtnHeader = document.getElementById('add-style-btn-header');
-            const addStyleBtnMobile = document.getElementById('add-style-btn-mobile');
-
-            function openUploadModal() {
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('opacity-100');
-                    // Close mobile menu if open
-                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                        menuIcon.classList.remove('fa-times');
-                        menuIcon.classList.add('fa-bars');
-                    }
-                }
-            }
-
-            if (addStyleBtnHeader) {
-                addStyleBtnHeader.addEventListener('click', openUploadModal);
-            }
-
-            if (addStyleBtnMobile) {
-                addStyleBtnMobile.addEventListener('click', openUploadModal);
-            }
 
             mobileMenuButton.addEventListener('click', function() {
                 // Toggle mobile menu visibility

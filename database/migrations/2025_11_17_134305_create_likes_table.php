@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('photo_analysis_id')->constrained('photo_analyses')->onDelete('cascade');
+            $table->foreignId('card_id')->constrained('cards')->onDelete('cascade');
             $table->timestamps();
-            
+
             // Ensure a user can only like a style once
-            $table->unique(['user_id', 'photo_analysis_id']);
+            $table->unique(['user_id', 'card_id']);
         });
     }
 

@@ -5,28 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Like extends Model
+class StyleImage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'card_id',
+        'path',
+        'url',
+        'filename',
+        'original_filename',
+        'file_size',
+        'dimensions',
+        'position',
     ];
 
-    /**
-     * Get the user that liked this style
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    protected $casts = [
+        'file_size' => 'integer',
+        'position' => 'integer',
+    ];
 
-    /**
-     * Get the photo analysis (style) that was liked
-     */
     public function photoAnalysis()
     {
         return $this->belongsTo(Card::class);
     }
 }
+

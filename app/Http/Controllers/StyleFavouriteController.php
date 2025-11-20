@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StyleFavourite;
-use App\Models\PhotoAnalysis;
+use App\Models\Card;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,13 +15,13 @@ class StyleFavouriteController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        
+
         if (!$userId) {
             return redirect()->route('login')->with('error', 'Please log in to view your favourites');
         }
 
         $favourites = StyleFavourite::where('user_id', $userId)
-            ->with(['photoAnalysis.user', 'photoAnalysis.productLinks'])
+            ->with(['photoAnalysis.user', 'photoAnalysis.productLinks', 'photoAnalysis.images'])
             ->with(['photoAnalysis' => function($query) {
                 $query->withCount(['likes', 'styleFavourites']);
             }])
@@ -36,7 +36,7 @@ class StyleFavouriteController extends Controller
      */
     public function toggle($photoAnalysisId)
     {
-        $photoAnalysis = PhotoAnalysis::findOrFail($photoAnalysisId);
+        $photoAnalysis = Card::findOrFail($photoAnalysisId);
         $userId = Auth::id();
         $sessionId = session()->getId();
 
@@ -81,7 +81,7 @@ class StyleFavouriteController extends Controller
      */
     public function check($photoAnalysisId)
     {
-        $photoAnalysis = PhotoAnalysis::findOrFail($photoAnalysisId);
+        $photoAnalysis = Card::findOrFail($photoAnalysisId);
         $userId = Auth::id();
         $sessionId = session()->getId();
 

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cards', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('cascade');
+        Schema::table('product_links', function (Blueprint $table) {
+            $table->foreignId('detected_item_id')->nullable()->change();
         });
     }
 
@@ -21,9 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cards', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropColumn('user_id');
+        Schema::table('product_links', function (Blueprint $table) {
+            // Note: Making it non-nullable again might fail if there are null values
+            $table->foreignId('detected_item_id')->nullable(false)->change();
         });
     }
 };

@@ -51,7 +51,7 @@ class ProductLink extends Model
     public function photoAnalysis()
     {
         return $this->hasOneThrough(
-            PhotoAnalysis::class,
+            Card::class,
             DetectedItem::class,
             'id',
             'id',

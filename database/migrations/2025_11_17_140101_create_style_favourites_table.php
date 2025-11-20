@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('style_favourites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->foreignId('photo_analysis_id')->constrained('photo_analyses')->onDelete('cascade');
+            $table->foreignId('card_id')->constrained('cards')->onDelete('cascade');
             $table->string('session_id')->nullable(); // For non-authenticated users
             $table->timestamps();
-            
+
             // Ensure a user/session can only favourite a style once
-            $table->unique(['user_id', 'photo_analysis_id']);
-            $table->unique(['session_id', 'photo_analysis_id']);
+            $table->unique(['user_id', 'card_id']);
+            $table->unique(['session_id', 'card_id']);
         });
     }
 

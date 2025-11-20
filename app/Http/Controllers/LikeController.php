@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Like;
-use App\Models\PhotoAnalysis;
+use App\Models\Card;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +21,7 @@ class LikeController extends Controller
             ], 401);
         }
 
-        $photoAnalysis = PhotoAnalysis::findOrFail($photoAnalysisId);
+        $photoAnalysis = Card::findOrFail($photoAnalysisId);
         $userId = Auth::id();
 
         // Don't allow users to like their own styles
@@ -67,11 +67,11 @@ class LikeController extends Controller
             return response()->json([
                 'success' => true,
                 'is_liked' => false,
-                'likes_count' => PhotoAnalysis::findOrFail($photoAnalysisId)->likes()->count()
+                'likes_count' => Card::findOrFail($photoAnalysisId)->likes()->count()
             ]);
         }
 
-        $photoAnalysis = PhotoAnalysis::findOrFail($photoAnalysisId);
+        $photoAnalysis = Card::findOrFail($photoAnalysisId);
         $isLiked = $photoAnalysis->isLikedBy(Auth::id());
         $likesCount = $photoAnalysis->likes()->count();
 

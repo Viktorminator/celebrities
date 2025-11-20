@@ -25,16 +25,23 @@
                                 <i class="fas fa-heart text-sm"></i>
                             </button>
                             
-                            <a href="{{ route('analysis-results', ['id' => $style->id]) }}" class="block">
-                                <img src="{{ $style->image_url }}" alt="Style" class="h-64 w-full object-cover" loading="lazy" />
+                            @php
+                                $primaryImage = $style->getAllImages()[0] ?? null;
+                            @endphp
+                            <a href="{{ route('style.view', $style->id) }}" class="block">
+                                @if($primaryImage)
+                                    <img src="{{ $primaryImage['url'] }}" alt="Style" class="h-64 w-full object-cover" loading="lazy" />
+                                @else
+                                    <div class="h-64 w-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">No image available</div>
+                                @endif
                                 <div class="p-4">
-                                    @if($style->analysis_metadata && isset($style->analysis_metadata['user_tags']) && count($style->analysis_metadata['user_tags']) > 0)
+                                    @if($style->styleTags && $style->styleTags->count() > 0)
                                         <div class="flex flex-wrap gap-1 mb-2">
-                                            @foreach(array_slice($style->analysis_metadata['user_tags'], 0, 3) as $tag)
-                                                <span class="bg-indigo-100 text-indigo-600 rounded-full px-2 py-1 text-xs font-medium">{{ $tag }}</span>
+                                            @foreach($style->styleTags->take(3) as $styleTag)
+                                                <span class="bg-indigo-100 text-indigo-600 rounded-full px-2 py-1 text-xs font-medium">{{ $styleTag->tag }}</span>
                                             @endforeach
-                                            @if(count($style->analysis_metadata['user_tags']) > 3)
-                                                <span class="text-gray-400 text-xs">+{{ count($style->analysis_metadata['user_tags']) - 3 }}</span>
+                                            @if($style->styleTags->count() > 3)
+                                                <span class="text-gray-400 text-xs">+{{ $style->styleTags->count() - 3 }}</span>
                                             @endif
                                         </div>
                                     @endif

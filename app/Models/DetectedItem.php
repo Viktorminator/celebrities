@@ -10,7 +10,7 @@ class DetectedItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'photo_analysis_id',
+        'card_id',
         'category',
         'description',
         'color',
@@ -32,7 +32,7 @@ class DetectedItem extends Model
      */
     public function photoAnalysis()
     {
-        return $this->belongsTo(PhotoAnalysis::class);
+        return $this->belongsTo(Card::class);
     }
 
     /**

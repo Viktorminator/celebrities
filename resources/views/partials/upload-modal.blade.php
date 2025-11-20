@@ -16,7 +16,7 @@
         <div class="p-6 flex-1 overflow-y-auto">
             <form id="upload-form" enctype="multipart/form-data" class="space-y-6">
                 @csrf
-                
+
                 <!-- Step 1: Image Upload -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-3">
@@ -82,7 +82,7 @@
                         <i class="fas fa-tags mr-2 text-indigo-600"></i>Tags / Categories
                     </label>
                     <p class="text-xs text-gray-500 mb-3">Select or add tags to help others find your style</p>
-                    
+
                     <!-- Popular Tags -->
                     <div class="mb-4">
                         <p class="text-xs font-medium text-gray-600 mb-2">Popular Tags:</p>
@@ -105,19 +105,6 @@
                     <!-- Selected Tags Display -->
                     <div id="selected-tags" class="flex flex-wrap gap-2 mb-3 min-h-[40px]">
                         <p class="text-xs text-gray-400 self-center">No tags selected</p>
-                    </div>
-
-                    <!-- Custom Tag Input -->
-                    <div class="flex gap-2">
-                        <input
-                            type="text"
-                            id="custom-tag-input"
-                            placeholder="Add custom tag..."
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                        >
-                        <button type="button" id="add-custom-tag-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
-                            <i class="fas fa-plus mr-1"></i>Add
-                        </button>
                     </div>
                     <input type="hidden" id="tags-input" name="tags" value="">
                 </div>
@@ -172,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const addCustomTagBtn = document.getElementById('add-custom-tag-btn');
     const selectedTagsContainer = document.getElementById('selected-tags');
     const tagsInput = document.getElementById('tags-input');
-    
+
     let selectedTags = new Set();
 
     // Close modal
@@ -288,10 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </button>
         `;
         linksContainer.appendChild(linkItem);
-        
+
         // Show remove button on first link if there are multiple
         updateLinkButtons();
-        
+
         // Add remove functionality
         linkItem.querySelector('.remove-link-btn').addEventListener('click', () => {
             linkItem.remove();
@@ -356,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSelectedTags() {
         tagsInput.value = Array.from(selectedTags).join(',');
-        
+
         if (selectedTags.size === 0) {
             selectedTagsContainer.innerHTML = '<p class="text-xs text-gray-400 self-center">No tags selected</p>';
         } else {
@@ -368,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 </span>
             `).join('');
-            
+
             // Add remove functionality to tag chips
             selectedTagsContainer.querySelectorAll('.remove-tag-btn').forEach(btn => {
                 btn.addEventListener('click', () => {

@@ -12,9 +12,9 @@
                     <h1 class="text-3xl font-display font-bold text-indigo-900 mb-2">My Styles</h1>
                     <p class="text-gray-600">View and manage all your fashion style posts</p>
                 </div>
-                <a href="{{ route('home') }}" class="bg-pink-500 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors flex items-center gap-2">
+                <a href="{{ route('styles.create') }}" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-pink-600 transition-colors flex items-center gap-2">
                     <i class="fas fa-plus"></i>
-                    Add New Style
+                    Add Your Style
                 </a>
             </div>
         </div>
@@ -58,16 +58,35 @@
             <div id="grid-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach($styles as $style)
                     <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                        <!-- Image -->
-                        <div class="relative h-64 bg-gray-100">
-                            <img src="{{ $style->image_url }}" alt="Style image" class="w-full h-full object-cover" loading="lazy">
-                            <div class="absolute top-2 right-2">
+                        <!-- Image with Carousel -->
+                        @php
+                            $allImages = $style->getAllImages();
+                            $imageCount = count($allImages);
+                        @endphp
+                        <div class="relative h-64 bg-gray-100 overflow-hidden" id="my-style-carousel-{{ $style->id }}">
+                            @foreach($allImages as $index => $image)
+                                <img src="{{ $image['url'] }}"
+                                     alt="Style image {{ $index + 1 }}"
+                                     class="my-style-carousel-image w-full h-full object-cover {{ $index === 0 ? 'active' : 'hidden' }}"
+                                     data-index="{{ $index }}"
+                                     loading="{{ $index === 0 ? 'lazy' : 'lazy' }}">
+                            @endforeach
+                            <div class="absolute top-2 right-2 z-10">
                                 <button type="button" onclick="showDeleteModal({{ $style->id }})" class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors">
                                     <i class="fas fa-trash text-xs"></i>
                                 </button>
                             </div>
+                            @if($imageCount > 1)
+                            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
+                                @for($i = 0; $i < $imageCount; $i++)
+                                    <div class="my-style-indicator w-1.5 h-1.5 rounded-full {{ $i === 0 ? 'bg-white' : 'bg-white bg-opacity-50' }}"
+                                         data-index="{{ $i }}"
+                                         onclick="event.stopPropagation(); showMyStyleImage({{ $style->id }}, {{ $i }});"></div>
+                                @endfor
+                            </div>
+                            @endif
                             @if($style->status === 'processing')
-                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
                                     <div class="text-center text-white">
                                         <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                                         <p class="text-sm">Processing...</p>
@@ -79,13 +98,13 @@
                         <!-- Content -->
                         <div class="p-4">
                             <!-- Tags -->
-                            @if($style->analysis_metadata && isset($style->analysis_metadata['user_tags']) && count($style->analysis_metadata['user_tags']) > 0)
+                            @if($style->styleTags && $style->styleTags->count() > 0)
                                 <div class="flex flex-wrap gap-1 mb-3">
-                                    @foreach(array_slice($style->analysis_metadata['user_tags'], 0, 3) as $tag)
-                                        <span class="px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-medium">{{ $tag }}</span>
+                                    @foreach($style->styleTags->take(3) as $styleTag)
+                                        <span class="px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-medium">{{ $styleTag->tag }}</span>
                                     @endforeach
-                                    @if(count($style->analysis_metadata['user_tags']) > 3)
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">+{{ count($style->analysis_metadata['user_tags']) - 3 }}</span>
+                                    @if($style->styleTags->count() > 3)
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">+{{ $style->styleTags->count() - 3 }}</span>
                                     @endif
                                 </div>
                             @endif
@@ -109,7 +128,7 @@
                             <!-- Date -->
                             <div class="flex items-center justify-between text-xs text-gray-500">
                                 <span>{{ $style->created_at->format('M d, Y') }}</span>
-                                <a href="{{ route('styles.show', $style->id) }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                <a href="{{ route('style.view', $style->id) }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
                                     View Details <i class="fas fa-arrow-right ml-1"></i>
                                 </a>
                             </div>
@@ -134,15 +153,22 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($styles as $style)
+                                @php
+                                    $primaryImage = $style->getAllImages()[0] ?? null;
+                                @endphp
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <img src="{{ $style->image_url }}" alt="Style" class="h-20 w-20 object-cover rounded-lg">
+                                        @if($primaryImage)
+                                            <img src="{{ $primaryImage['url'] }}" alt="Style" class="h-20 w-20 object-cover rounded-lg">
+                                        @else
+                                            <div class="h-20 w-20 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No image</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if($style->analysis_metadata && isset($style->analysis_metadata['user_tags']) && count($style->analysis_metadata['user_tags']) > 0)
+                                        @if($style->styleTags && $style->styleTags->count() > 0)
                                             <div class="flex flex-wrap gap-1">
-                                                @foreach($style->analysis_metadata['user_tags'] as $tag)
-                                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-medium">{{ $tag }}</span>
+                                                @foreach($style->styleTags as $styleTag)
+                                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-medium">{{ $styleTag->tag }}</span>
                                                 @endforeach
                                             </div>
                                         @else
@@ -181,7 +207,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-2">
-                                            <a href="{{ route('styles.show', $style->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                            <a href="{{ route('style.view', $style->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <button type="button" onclick="showDeleteModal({{ $style->id }})" class="text-red-600 hover:text-red-900">
@@ -245,6 +271,35 @@
 </div>
 
 <script>
+// My Styles carousel functions
+function showMyStyleImage(styleId, index) {
+    const carousel = document.getElementById(`my-style-carousel-${styleId}`);
+    if (!carousel) return;
+
+    const images = carousel.querySelectorAll('.my-style-carousel-image');
+    const indicators = carousel.querySelectorAll('.my-style-indicator');
+
+    images.forEach((img, i) => {
+        if (i === index) {
+            img.classList.remove('hidden');
+            img.classList.add('active');
+        } else {
+            img.classList.add('hidden');
+            img.classList.remove('active');
+        }
+    });
+
+    indicators.forEach((ind, i) => {
+        if (i === index) {
+            ind.classList.remove('bg-opacity-50');
+            ind.classList.add('bg-white');
+        } else {
+            ind.classList.add('bg-opacity-50');
+            ind.classList.remove('bg-white');
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const gridView = document.getElementById('grid-view');
     const tableView = document.getElementById('table-view');

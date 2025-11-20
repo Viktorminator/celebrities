@@ -11,7 +11,7 @@ class StyleFavourite extends Model
 
     protected $fillable = [
         'user_id',
-        'photo_analysis_id',
+        'card_id',
         'session_id',
     ];
 
@@ -28,6 +28,6 @@ class StyleFavourite extends Model
      */
     public function photoAnalysis()
     {
-        return $this->belongsTo(PhotoAnalysis::class);
+        return $this->belongsTo(Card::class);
     }
 }

@@ -54,7 +54,7 @@ class User extends Authenticatable
      */
     public function photoAnalyses()
     {
-        return $this->hasMany(PhotoAnalysis::class);
+        return $this->hasMany(Card::class);
     }
 
     /**

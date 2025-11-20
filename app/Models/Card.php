@@ -5,29 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PhotoAnalysis extends Model
+class Card extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'image_path',
-        'image_url',
-        'file_size',
-        'dimensions',
-        'analysis_metadata',
+        'description',
         'status',
-        'detected_celebrities',
-        'face_count',
-        'has_person',
-        'context_labels'
     ];
 
     protected $casts = [
-        'analysis_metadata' => 'array',
-        'detected_celebrities' => 'array',
-        'context_labels' => 'array',
-        'has_person' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -96,23 +84,52 @@ class PhotoAnalysis extends Model
         $this->update(['status' => 'failed']);
     }
 
-    /**
-     * Get formatted file size
-     */
-    public function getFormattedFileSizeAttribute()
+    public function images()
     {
-        if (!$this->file_size) {
-            return 'N/A';
+        return $this->hasMany(StyleImage::class)->orderBy('position');
+    }
+
+    /**
+     * Get all images for this style (for multi-image support)
+     */
+    public function getAllImages()
+    {
+        $images = $this->relationLoaded('images') ? $this->images : $this->images()->get();
+
+        if ($images->isNotEmpty()) {
+            return $images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'path' => $image->path,
+                    'url' => $image->url,
+                    'filename' => $image->filename,
+                    'original_filename' => $image->original_filename,
+                    'file_size' => $image->file_size,
+                    'dimensions' => $image->dimensions,
+                ];
+            })->toArray();
         }
 
-        $bytes = $this->file_size;
-        $units = ['B', 'KB', 'MB', 'GB'];
+        $metadata = $this->analysis_metadata ?? [];
 
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
-        }
+        return [[
+            'id' => null,
+            'path' => $this->image_path,
+            'url' => $this->image_url,
+            'filename' => basename($this->image_path ?? ''),
+            'original_filename' => $metadata['original_filename'] ?? null,
+            'file_size' => $this->file_size,
+            'dimensions' => $this->dimensions,
+        ]];
+    }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+    /**
+     * Get image count
+     */
+    public function getImageCount()
+    {
+        $images = $this->getAllImages();
+        return count($images);
     }
 
     /**
@@ -163,7 +180,7 @@ class PhotoAnalysis extends Model
      */
     public function styleFavourites()
     {
-        return $this->hasMany(StyleFavourite::class, 'photo_analysis_id');
+        return $this->hasMany(StyleFavourite::class, 'card_id');
     }
 
     /**
@@ -186,5 +203,21 @@ class PhotoAnalysis extends Model
     public function getStyleFavouritesCountAttribute()
     {
         return $this->styleFavourites()->count();
+    }
+
+    /**
+     * Get the style tags for this analysis
+     */
+    public function styleTags()
+    {
+        return $this->hasMany(StyleTag::class);
+    }
+
+    /**
+     * Get tags as array (for backward compatibility)
+     */
+    public function getTagsAttribute()
+    {
+        return $this->styleTags->pluck('tag')->toArray();
     }
 }
